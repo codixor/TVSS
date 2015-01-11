@@ -4,6 +4,7 @@ class Stream{
 	
 	function __construct(){
 	
+	
 	}
 	
 	public function get($max_id,$limit=20,$lang=null,$user_id = null, $friends = array()){
