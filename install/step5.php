@@ -496,6 +496,7 @@ rename(realpath(dirname(__FILE__)).'/../control',realpath(dirname(__FILE__)).'/.
 print("<span style='color:#00aa00'>Success</span><br />");
 ?>
         
+        
         Congratulation. Your site is all set up<br /><br />
         Next steps:<br /><br />
         <ul>
