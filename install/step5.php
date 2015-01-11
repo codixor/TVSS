@@ -370,7 +370,8 @@
                                       KEY `season` (`season`),
                                       KEY `episode` (`episode`),
                                       KEY `language` (`language`),
-                                      KEY `status` (`status`)
+                                      KEY `status` (`status`),
+									  UNIQUE INDEX `link` (`link`)
                                     ) DEFAULT CHARSET=utf8 ");
             
             $table = ORM::raw_execute("CREATE TABLE `tv_submits` (
