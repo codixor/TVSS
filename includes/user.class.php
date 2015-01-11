@@ -612,5 +612,4 @@ class User{
         
         return $res;
     }
-    
 }
