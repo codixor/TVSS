@@ -123,7 +123,21 @@ if (isset($approve) && $approve){
     }    
 }
 
-$links = $movie->getLinks(null,$default_language);
+if (!isset($p) || !$p || !is_numeric($p)){
+	$p = 1;
+}
+
+if (!isset($sortby) || !in_array($sortby, array("status","date"))){
+	$sortby = "status";
+}
+
+$maxperpage = 100;
+
+$total_count = $movie->getLinksCount();
+
+$links = $movie->getLinks(null, $default_language, $p, $maxperpage, $sortby);
+ 
+$pagination = $misc->getAdminPagination($total_count, $p, $maxperpage, "index.php?menu=movie_links&sortby=$sortby&p=");
  
 ?>
 
@@ -157,7 +171,12 @@ $links = $movie->getLinks(null,$default_language);
         <?php 
             }
         ?>
-    
+		<div class="pagination pull-right nomargin" style="margin-top:0px;">
+            <?php
+                print($pagination);
+            ?>
+        </div>		
+		
         <table class="table table-striped table-bordered">
              <thead>
                  <tr>

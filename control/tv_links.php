@@ -76,11 +76,25 @@ if (isset($approve) && $approve){
     }
 }
 
-if (isset($global_languages['en'])){
-    $links = $show->getLinks(null,"en");
-} else {
-    $links = $show->getLinks(null, $default_language);
+if (!isset($p) || !$p || !is_numeric($p)){
+	$p = 1;
 }
+
+if (!isset($sortby) || !in_array($sortby, array("status","date"))){
+	$sortby = "status";
+}
+
+$maxperpage = 100;
+
+$total_count = $show->getLinksCount();
+
+if (isset($global_languages['en'])){
+    $links = $show->getLinks(null,"en", $p, $maxperpage, $sortby);
+} else {
+    $links = $show->getLinks(null, $default_language, $p, $maxperpage, $sortby);
+}
+
+$pagination = $misc->getAdminPagination($total_count, $p, $maxperpage, "index.php?menu=tv_links&sortby=$sortby&p=");
  
 ?>
 
@@ -115,6 +129,12 @@ if (isset($global_languages['en'])){
         <?php 
             }
         ?>
+		
+		<div class="pagination pull-right nomargin" style="margin-top:0px;">
+            <?php
+                print($pagination);
+            ?>
+        </div>
     
         <table class="table table-striped table-bordered">
              <thead>
