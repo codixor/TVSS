@@ -58,7 +58,8 @@ RewriteRule ^/?movies/date index.php?menu=movies&sortby=date&lang=en
 RewriteRule ^/?movies/abc index.php?menu=movies&sortby=abc&lang=en
 RewriteRule ^/?movies/imdb_rating index.php?menu=movies&sortby=imdb_rating&lang=en
 RewriteRule ^/?movies index.php?menu=movies&lang=en [L]
-RewriteRule ^/?requests       index.php?menu=requests&lang=en [L]
+RewriteRule ^/?requests       		index.php?menu=requests&lang=en [L]
+RewriteRule ^/?forgot-password      index.php?menu=forgot_password [L]
 
 ###################
 # general routes #
