@@ -1,0 +1,25 @@
+include("includes/idiorm.php");
+include("includes/Carbon.php");
+
+class_alias('Carbon\Carbon', 'Carbon');
+
+$license_key = "[[LICENSE_KEY]]";
+
+$dbhost = "[[DBHOST]]";
+$dbuser = "[[DBUSER]]";
+$dbpass = "[[DBPASS]]";
+$dbname = "[[DATABASE]]";
+ 
+$baseurl = "[[BASEURL]]";
+$basepath = "[[BASEPATH]]";
+$sitename = "[[SITENAME]]";
+
+$siteslogan = "";
+
+ORM::configure([
+    'connection_string' => 'mysql:host='.$dbhost.';dbname='.$dbname,
+    'username' => $dbuser,
+    'password' => $dbpass
+]);
+
+ORM::configure('caching', true);
