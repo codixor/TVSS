@@ -7,36 +7,32 @@ class Stream{
 	
 	}
 	
-	public function get($max_id,$limit=20,$lang=null,$user_id = null, $friends = array()){
+	public function get($max_id, $limit=20, $lang=null, $user_id = null, $friends = array()){
 		$where = array();
 		
-		if ($user_id && is_numeric($user_id)){
+		if ($user_id && is_numeric($user_id) && $max_id){
 			if (count($friends)){
 				$friends[] = $user_id;
-				foreach($friends as $k => $v){
-					$friends[$k] = mysql_real_escape_string($v);
-				}
-				$where[] = "user_id IN (".implode(",",$friends).")";
+				$e = ORM::for_table('activity')->where_in('user_id', $friends)->where_lt('id', $max_id)->limit($limit)->find_array();
 			} else {
-				$where[] = "user_id='".mysql_real_escape_string($user_id)."'";
+				$e = ORM::for_table('activity')->where('user_id', $user_id)->where_lt('id', $max_id)->limit($limit)->find_array();
 			}
+		}elseif ($user_id && is_numeric($user_id) && !$max_id){
+			if (count($friends)){
+				$friends[] = $user_id;
+				$e = ORM::for_table('activity')->where_in('user_id', $friends)->limit($limit)->find_array();
+			} else {
+				$e = ORM::for_table('activity')->where('user_id', $user_id)->limit($limit)->find_array();
+			}
+		}elseif (!$user_id && $max_id){
+			$e = ORM::for_table('activity')->where_lt('id', $max_id)->limit($limit)->find_array();
+		}else{
+			$e = array();
 		}
-		
-		if ($max_id){
-			$where[] = "id<$max_id";
-		}
-		
-		if (count($where)){
-			$where = "WHERE ".implode(" AND ",$where);
-		} else {
-			$where = "";
-		}
-		
-				
-		$e = mysql_query("SELECT * FROM activity $where ORDER BY id DESC LIMIT $limit") or die(mysql_error());
+						
 		$res = array();
-		if (mysql_num_rows($e)){
-			while($s = mysql_fetch_assoc($e)){
+		if (count($e) > 0){
+			foreach($e as $s){
 				$s['user_data'] = json_decode($s['user_data'],true);
 				if (!$lang){
 					$s['target_data'] = json_decode($s['target_data'],true);
@@ -48,9 +44,7 @@ class Stream{
 						} else {
 							$s['target_data']['title'] = $s['target_data']['title']['en'];
 						}
-					}
-					
-					
+					}			
 					
 					if (isset($s['target_data']['description']) && $s['target_data']['description']){
 						
@@ -79,31 +73,22 @@ class Stream{
 	}
 	
 	public function addLike($data){
-		$keys = array();
-		$values = array();
-		foreach($data as $key => $val){
-			$values[] = "'".mysql_real_escape_string($val)."'";
-			$keys[] = "`$key`";
-		}
 		
-		$e = mysql_query("SELECT id as like_id FROM likes WHERE user_id='{$data['user_id']}' AND target_id='{$data['target_id']}' AND target_type='{$data['target_type']}'") or die(mysql_error());
-		if (mysql_num_rows($e)){
-			extract(mysql_fetch_assoc($e));
-			$del = mysql_query("DELETE FROM likes WHERE id='$like_id'") or die(mysql_error());
-		}
+		$e = ORM::for_table('likes')->where('user_id', $data['user_id'])->where('target_id', $data['target_id'])->where('target_type', $data['target_type'])->find_one();
 		
-		$ins = mysql_query("INSERT INTO likes(".implode(",",$keys).") VALUES(".implode(",",$values).")") or die(mysql_error());
-		return mysql_insert_id();
+		if(!empty($e->id))
+			$e->delete();
+			
+		$ins = ORM::for_table('likes')->create();
+		$ins->set($data);
+		$ins->save();
+		
+		return $ins->id;
+		
 	}
 	
 	public function addWatch($data){
-		$keys = array();
-		$values = array();
-		foreach($data as $key => $val){
-			$values[] = "'".mysql_real_escape_string($val)."'";
-			$keys[] = "`$key`";
-		}
-		
+				
 		if ($data['target_type']==3){
 			if (!isset($_SESSION['loggeduser_seen_episodes'])){
 				$_SESSION['loggeduser_seen_episodes'] = array();
@@ -122,31 +107,35 @@ class Stream{
 			}
 		}
 		
-		$e = mysql_query("SELECT id as watch_id FROM watches WHERE user_id='{$data['user_id']}' AND target_id='{$data['target_id']}' AND target_type='{$data['target_type']}'") or die(mysql_error());
-		if (mysql_num_rows($e)==0){
-			$ins = mysql_query("INSERT INTO watches(".implode(",",$keys).") VALUES(".implode(",",$values).")") or die(mysql_error());
-			return mysql_insert_id();
-		} else {
+		$e = ORM::for_table('watches')->where('user_id', $data['user_id'])->where('target_id', $data['target_id'])->where('target_type', $data['target_type'])->find_one();
+		
+		if(!$e){
+			$ins = ORM::for_table('watches')->create();
+			$ins->set($data);
+			$ins->save();
+			
+			return $ins->id;
+		}else {
+		
 			return 0;
 		}
 	}
 	
 	public function addActivity($data){
-		$keys = array();
-		$values = array();
-		foreach($data as $key => $val){
+
+		foreach($data as $key => $val){		
 			if (is_array($val)){
-				$values[] = "'".mysql_real_escape_string(json_encode($val))."'";
+				$data[$key] = json_encode($val);
 			} else {
-				$values[] = "'".mysql_real_escape_string($val)."'";
+				$data[$key] = $val;
 			}
-			$keys[] = "`$key`";
 		}
 		
-		$ins = mysql_query("INSERT INTO activity(".implode(",",$keys).") VALUES(".implode(",",$values).")") or die(mysql_error());
-		return mysql_insert_id();
+		$ins = ORM::for_table('activity')->create();
+		$ins->set($data);
+		$ins->save();
+		
+		return $ins->id;
 	}
 
 }
-
-?>
