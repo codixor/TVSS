@@ -139,11 +139,11 @@
                                       `episode` int(11) NOT NULL,
                                       `title` varchar(255) NOT NULL,
                                       `description` text NOT NULL,
-                                      `embed` text NOT NULL,
+                                      `embed` TEXT NULL,
                                       `date_added` datetime NOT NULL,
                                       `thumbnail` varchar(255) NOT NULL,
-                                      `views` bigint(20) NOT NULL,
-                                      `checked` tinyint(4) NOT NULL,
+                                      `views` BIGINT(20) NOT NULL DEFAULT '0',
+                                      `checked` TINYINT(4) NULL,
                                       PRIMARY KEY  (`id`),
                                       KEY `category_id` (`show_id`),
                                       KEY `season` (`season`),
@@ -194,6 +194,7 @@
                                       `imdb_id` varchar(30) NOT NULL,
                                       `imdb_rating` float NOT NULL,
                                       `date_added` datetime NOT NULL,
+									  `year` SMALLINT(4) NOT NULL,
                                       `meta` text NOT NULL,
                                       PRIMARY KEY  (`id`),
                                       KEY `imdb_id` (`imdb_id`),
@@ -320,9 +321,10 @@
                                       `imdb_id` varchar(20) NOT NULL,
                                       `type` tinyint(4) NOT NULL,
                                       `featured` tinyint(4) NOT NULL default '0',
-                                      `last_episode` datetime NOT NULL,
+                                      `last_episode` datetime NULL,
                                       `imdb_rating` float NOT NULL,
-                                        `meta` text NOT NULL,
+                                      `meta` text NOT NULL,
+									  `status` VARCHAR(20) NOT NULL,
                                       PRIMARY KEY  (`id`),
                                       KEY `permalink` (`permalink`),
                                       KEY `title` (`title`),
@@ -452,6 +454,7 @@
 			$table = ORM::raw_execute("ALTER TABLE `tv_tags_join`	  ADD CONSTRAINT `tv_tags_join_tv_tags` FOREIGN KEY (`tag_id`) REFERENCES `tv_tags` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE;");
 			$table = ORM::raw_execute("ALTER TABLE `tv_tags_join`	  ADD CONSTRAINT `tv_tags_join_shows` FOREIGN KEY (`show_id`) REFERENCES `shows` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE;");
 			$table = ORM::raw_execute("ALTER TABLE `watches`	      ADD CONSTRAINT `watches_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE;");
+			$table = ORM::raw_execute("ALTER TABLE `activity`	      ADD CONSTRAINT `activity_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE;");
             
 			print("<span style='color:#00aa00'>Success</span><br />");
         ?>

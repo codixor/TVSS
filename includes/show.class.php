@@ -759,18 +759,17 @@ class Show{
                 $errors[8] = "Year must be numeric";
             }
             
-            if (!isset($params['imdb_id']) || substr_count($params['imdb_id'],"tt")==0){
+           if (!isset($params['imdb_id']) || substr_count($params['imdb_id'],"tt")==0){
                 $errors[6] = "Invalid IMDB id. It should be in format: tt12345";
             } else {
-                $imdb = mysql_real_escape_string($params['imdb_id']);
+                $imdb = $params['imdb_id'];
                 if (!$update){
-                    $check = mysql_query("SELECT * FROM shows WHERE imdb_id='$imdb'") or die(mysql_error());
-                } else {
-                    $update = mysql_real_escape_string($update);
-                    $check = mysql_query("SELECT * FROM shows WHERE imdb_id='$imdb' AND id!='$update'") or die(mysql_error());
+					$check = ORM::for_table('shows')->where('imdb_id', $imdb)->find_one();
+                } else {  
+					$check = ORM::for_table('shows')->where('imdb_id', $imdb)->where_not_equal('id', $update)->find_one();                    
                 }
                 
-                if (mysql_num_rows($check)){
+                if ($check){
                     $errors[6] = "This IMDB id is already in use";
                 }
                 
@@ -1238,6 +1237,11 @@ class Show{
             $params['title'] = json_encode($params['title']);
         }
         
+		if (!isset($params['embed']) || !$params['embed']){
+            $params['embed'] = null;
+        }
+		
+		
         $params['description'] = json_encode($params['description']);
         
         $episode_id = $this->getEpisode($params['show_id'],$params['season'],$params['episode']);
@@ -1251,6 +1255,7 @@ class Show{
             $ins->episode     = $params['episode'];
             $ins->show_id     = $params['show_id'];
             $ins->date_added  = Carbon::now()->toDateTimeString();
+            $ins->checked  	  = $params['checked'];
             $ins->save();
             $episode_id = $ins->id;
             
