@@ -1,5 +1,8 @@
 <?php
-if (!isset($_SESSION['tvss']['admin_user_id']) || !$_SESSION['tvss']['admin_user_id'] || !isset($_SESSION['tvss']['admin_username']) || (!isset($_POST['date']) && !isset($_GET['date']))){
+
+session_start();
+
+if (!isset($_SESSION['admin_user_id']) || !$_SESSION['admin_user_id'] || !isset($_SESSION['admin_username']) || (!isset($_POST['date']) && !isset($_GET['date']))){
 	exit();
 }
 
