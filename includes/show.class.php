@@ -1760,27 +1760,27 @@ class Show{
 		$start = ($page-1)*20;
 		
         if (isset($params['creator'])){
-            $res = ORM::for_table('shows')->where_raw('MATCH (meta) AGAINST (? IN BOOLEAN MODE)', [$params['creator']])
+            $res = ORM::for_table('shows')->where_like('meta', '%'.$params['director'].'%')
 			->limit(20)
 			->offset($start)
 			->find_array();
         } elseif (isset($params['star'])){
-            $res = ORM::for_table('shows')->where_raw('MATCH (meta) AGAINST (? IN BOOLEAN MODE)', [$params['star']])
+            $res = ORM::for_table('shows')->where_like('meta', '%'.$params['star'].'%')
 			->limit(20)
 			->offset($start)
 			->find_array();
 		} elseif (isset($params['country'])){
-			$res = ORM::for_table('shows')->where_raw('MATCH (meta) AGAINST (? IN BOOLEAN MODE)', [$params['country']])
+			$res = ORM::for_table('shows')->where_like('meta', '%'.$params['country'].'%')
 			->limit(20)
 			->offset($start)
 			->find_array();
 		} elseif (isset($params['keyword'])){
-			$res = ORM::for_table('shows')->where_raw('MATCH (meta) AGAINST (? IN BOOLEAN MODE)', [$params['keyword']])
+			$res = ORM::for_table('shows')->where_like('meta', '%'.$params['keyword'].'%')
 			->limit(20)
 			->offset($start)
 			->find_array();
         } elseif (isset($params['year_started'])){
-            $res = ORM::for_table('shows')->where_raw('MATCH (meta) AGAINST (? IN BOOLEAN MODE)', [$params['year_started']])
+            $res = ORM::for_table('shows')->where_like('meta', '%'.$params['year_started'].'%')
 			->limit(20)
 			->offset($start)
 			->find_array();			
