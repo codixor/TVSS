@@ -1669,12 +1669,11 @@ class Show{
             $ids = [];
             foreach($e as $s){
                 extract($s);
-                $episodes[$epid] = [];
+                $episodes[$epid] = array();
+                $episodes[$epid]['episodetitle'] = $episodetitle;
                 
                 if (!$lang){
-                    $episodes[$epid]['title'] 		 = json_decode($showtitle, true);
-					$episodes[$epid]['episodetitle'] = json_decode($episodetitle, true);
-					$episodes[$epid]['description']	 = json_decode($description, true);
+                    $episodes[$epid]['title'] = json_decode($showtitle,true);
                 } else {
                     $episodes[$epid]['title'] = json_decode($showtitle,true);
 					
@@ -1683,11 +1682,6 @@ class Show{
                     } else {
                         $episodes[$epid]['title'] = $episodes[$epid]['title']['en'];
                     }
-					$episodes[$epid]['episodetitle'] = json_decode($episodetitle, true);
-					$episodes[$epid]['episodetitle'] = $episodes[$epid]['episodetitle'][$lang];
-					
-					$episodes[$epid]['description']  = json_decode($description, true);
-					$episodes[$epid]['description']  = $episodes[$epid]['description'][$lang];
                 }
                 
                 if ($thumbnail){
@@ -1698,12 +1692,13 @@ class Show{
                 
                 if (!$episodes[$epid]['episodetitle']){
                     $episodes[$epid]['episodetitle'] = "Season $season, Episode $episode";
-                }                
+                }
                 
-                $episodes[$epid]['season']		= $season;
-                $episodes[$epid]['episode']		= $episode;
+                $episodes[$epid]['description']=$description;
+                $episodes[$epid]['season']=$season;
+                $episodes[$epid]['episode']=$episode;
                 
-                $episodes[$epid]['embed'] = $embed;
+                $episodes[$epid]['embed']=$embed;
                 
                 $ids[] = $epid;
             }
