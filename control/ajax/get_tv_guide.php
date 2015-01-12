@@ -1,8 +1,5 @@
 <?php
-
-session_start();
-
-if (!isset($_SESSION['admin_user_id']) || !$_SESSION['admin_user_id'] || !isset($_SESSION['admin_username']) || (!isset($_POST['date']) && !isset($_GET['date']))){
+if (!isset($_SESSION['tvss']['admin_user_id']) || !$_SESSION['tvss']['admin_user_id'] || !isset($_SESSION['tvss']['admin_username']) || (!isset($_POST['date']) && !isset($_GET['date']))){
 	exit();
 }
 
@@ -82,19 +79,15 @@ if ($page){
 					<?php
 					$counter = 0;
 					foreach($episodes as $key => $val){
-						$cleanshow = trim(strtolower($val['show']));
-						$cleanshow = mysql_real_escape_string($cleanshow);
-						$cleanshow = preg_replace("/[^a-zA-Z0-9]/","%",$cleanshow);
-						
-						$e = mysql_query("SELECT id as showid FROM shows WHERE title LIKE '%\"$cleanshow\"%'") or die(mysql_error());
-						if (mysql_num_rows($e)==0){
+						$cleanshow = trim(strtolower($val['show']));						
+						$e = ORM::for_table('shows')->select('id', 'show_id')->where_raw('(`title` LIKE ?)', array('%'.$cleanshow.'%'))->find_one();
+						if (!$e){
 							$urlshow = urlencode($val['show']);
 							$action = "<a href='index.php?menu=shows_new&title[en]=$urlshow'>Add show</a>";
 						} else {
-							extract(mysql_fetch_array($e));
-							
-							$check = mysql_query("SELECT * FROM episodes WHERE show_id='$showid' AND season='{$val['season']}' AND episode='{$val['episode']}'") or die(mysql_error());
-							if (mysql_num_rows($check)){
+							$showid = $e->showid;
+							$check = ORM::for_table('episodes')->where('show_id', $showid)->where('season', $val['season'])->where('episode', $val['episode'])->find_one();							
+							if ($check){
 								$action = "Already have (<a href='index.php?menu=episodes&show_id=$showid&season={$val['season']}&episode={$val['episode']}'>Edit</a>)";
 							} else {							
 								$action = "<a href='index.php?menu=episodes&show_id=$showid&season={$val['season']}&episode={$val['episode']}'>Add episode</a>";
