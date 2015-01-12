@@ -215,6 +215,15 @@ class Movie{
 			->limit($limit)
 			->offset($start)
 			->find_array();
+        } elseif ($sortby=='year') {
+			$e = ORM::for_table('movies')
+			->select('movies.*')
+			->join('movie_tags_join', 'movies.id = movie_tags_join.movie_id')
+			->where('movie_tags_join.tag_id', $tag_id)	
+			->order_by_desc('movies.year')
+			->limit($limit)
+			->offset($start)
+			->find_array();
         } else {
            $e = ORM::for_table('movies')
 			->select('movies.*')
@@ -1083,6 +1092,14 @@ class Movie{
 			->order_by_desc('movies.imdb_rating')
 			->limit($l)->offset($start)			
 			->find_array();
+        }elseif ($sortby=='year'){
+            $e = ORM::for_table('movies')
+			->join('movie_embeds', 'movies.id = movie_embeds.movie_id')
+			->select('movies.*')
+			->group_by('movies.id')
+			->order_by_desc('movies.year')
+			->limit($l)->offset($start)			
+			->find_array();
         }else{
 			 $e = ORM::for_table('movies')
 			->join('movie_embeds', 'movies.id = movie_embeds.movie_id')
@@ -1171,11 +1188,12 @@ class Movie{
     }
 
     public function reportMovie($movieid, $problem, $ip, $user_agent = ''){
-        global $session;
-        if ($session->has('loggeduser_id')){
-            $user_id = $session->get('loggeduser_id');
+
+        if (isset($_SESSION['loggeduser_id'])){		
+            $user_id = $_SESSION['loggeduser_id'];
+			
         } else {
-            return $false;
+            return false;
         }
         
 		$check = ORM::for_table('broken_movies')->select('id')->where('ip', $ip)->where('movieid', $broken_movies)->find_one();

@@ -10,6 +10,11 @@ RewriteRule ^/?blog/([a-zA-Z0-9\-]+)$ index.php?menu=plugin&plugin=blogger&plugi
 ##################
 # english routes #
 ##################
+RewriteRule ^/?movie-tags/([a-z0-9_\-]+)/year/(\d+) index.php?menu=movie-tag&tag=$1&sortby=year&p=$2&lang=en [L]
+RewriteRule ^/?movie-tags/([a-z0-9_\-]+)/year index.php?menu=movie-tag&tag=$1&sortby=year&lang=en [L]
+RewriteRule ^/?movies/year/(\d+)$ index.php?menu=movies&p=$1&sortby=year&lang=en [L]
+RewriteRule ^/?movies/year index.php?menu=movies&sortby=year&lang=en
+RewriteRule ^/?movietag/([a-z0-9_\-]+)/year index.php?menu=movie-tag&tag=$1&sortby=year [L]
 
 RewriteRule ^/?movie-tags/([a-z0-9_\-]+)/date/(\d+) index.php?menu=movie-tag&tag=$1&sortby=date&p=$2&lang=en [L]
 RewriteRule ^/?movie-tags/([a-z0-9_\-]+)/date index.php?menu=movie-tag&tag=$1&sortby=date&lang=en [L]
