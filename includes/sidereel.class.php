@@ -366,6 +366,33 @@ class Sidereel{
     return $embeds;
   }
 
+  public function getShowStatus($sidereel_url){
+        global $basepath;
+         
+        $this->curl->setAjax();
+        $this->curl->header(true);
+        $this->curl->cookiefile = $basepath."/cachefiles/sidereelcookie.txt";
+        $this->curl->setCookieFile($basepath."/cachefiles/sidereelcookie.txt");
+        
+        $dom = new DOMDocument();
+        $page = $this->curl->get($sidereel_url);
+        @$dom->loadHTML($page);
+        $divs = $dom->getElementsByTagName('div');
+            for($i=0;$i<$divs->length;$i++){
+                if (substr_count($divs->item($i)->getAttribute("class"),"status")){
+                    $ad = $divs->item($i)->getElementsByTagName("span");
+                        if ($ad->length){
+                            $status = $divs->item($i)->textContent;
+                            $array = array("[\\|]","[Show]","[Status]","[:]","[ ]");
+                            $show_status = preg_replace($array,'',$status,-1);
+                            return $show_status;
+                        } else {
+                            return false;
+                        }
+                }
+            }
+  }
+	
   public function getEpisodeDetails($link){
     global $basepath;
     
@@ -658,5 +685,3 @@ class Sidereel{
   }
    
 }
-
-?>

@@ -30,6 +30,7 @@ if (isset($updshow) && isset($showid) && $showid){
 }
 
 if (isset($showid) && $showid && (!isset($updshow) || !$updshow)){
+    $show_status = $show->getShowStatus($showid);
     $edit_show = $show->getShow($showid);
     if ($edit_show){
         extract($edit_show[$showid]);
@@ -219,6 +220,19 @@ if (isset($addshow)){
                     </div>
                 </div>
                 
+				<!--  Show Status -->
+                <div class="control-group<?php if (isset($errors[4])){ print(" error"); } ?>">
+                    <label class="control-label">Show status</label>
+                    <div class="controls">
+                        <input type="text" name="show_status" id="show_status" value="<?php if (isset($show_status)) print($show_status['status']); ?>" class="span5" />
+                        <input type="button" class="btn" onclick="getShowStatus();" value="Grab status" />
+
+                        <?php if (isset($errors[4])){ ?>
+                            <span class="help-inline"><?php print($errors[4]); ?></span>
+                        <?php } ?>
+                    </div>
+                </div>
+				
                 <!--  Featured -->
                 <div class="control-group">
                     <label class="control-label">Featured?</label>
@@ -227,8 +241,8 @@ if (isset($addshow)){
                             <input type="checkbox" <?php if (isset($featured) && $featured) print("checked='checked'"); ?> name="featured" />
                         </label>
                     </div>
-                </div>
-                
+                </div>          
+				
                 <!--  Categories -->
                 <?php if (count($categories)){ ?>
                 <div class="control-group">

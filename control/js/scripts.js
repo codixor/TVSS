@@ -15,6 +15,24 @@ function getSidereelURL(){
     }
 }
 
+function getShowStatus(){
+    var showtitle = jQuery('#title\\[en\\]').val();
+    var sidereel_url = jQuery('#sidereel_url').val();
+    if ((!sidereel_url) || (sidereel_url=='')){
+        alert("Please grab Sidereel URL first");
+    } else {
+        jQuery.post("ajax/get_show_status.php",{
+            sidereel_url: sidereel_url
+        }, function(data){
+            if (data=='0'){
+                alert("Can't find this show on Sidereel");
+            } else {
+                jQuery('#show_status').val(data);
+            }
+        });
+    }
+}
+
 var movie_star_counter = 0;
 
 function removeMovieStars(){

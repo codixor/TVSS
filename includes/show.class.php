@@ -1303,6 +1303,12 @@ class Show{
             $sidereel_url = '';
         }
         
+		if (isset($params['show_status'])){
+            $show_status = $params['show_status'];
+        } else {
+            $show_status = 'Undefined';
+        }
+		
         if (isset($params['featured']) && $params['featured']){
             $featured = 1;
         } else {
@@ -1408,6 +1414,7 @@ class Show{
 		$insert->featured 		= $featured;
 		$insert->imdb_rating 	= $imdb_rating;
 		$insert->meta 			= $meta;
+		$insert->status			= $show_status;
 		$insert->save();
         return $insert->id;			
         
@@ -1431,6 +1438,12 @@ class Show{
             
             $imdb_id = $params['imdb_id'];
             
+			if (isset($params['show_status'])){
+                $show_status = $params['show_status'];
+            } else {
+                $show_status = 'Undefined';
+            }
+			
             if (isset($params['featured']) && $params['featured']){
                 $featured = 1;
             } else {
@@ -1535,6 +1548,7 @@ class Show{
 			$check->featured 	 = $featured;
 			$check->imdb_rating  = $imdb_rating;
 			$check->meta 		 = $meta;
+			$check->status 		 = $show_status;
 			$check->save();   
 			
             return true;
@@ -2500,4 +2514,4 @@ class Show{
 		
 		return $shows;
 	}   
-}?>
+}
