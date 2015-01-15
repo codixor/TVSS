@@ -1,0 +1,39 @@
+{
+	"require": {
+		"php": ">=5.4.0"
+	},
+	"require-dev": {
+		
+	},	
+	"autoload": {
+		"classmap": [
+			"includes/idiorm.class.php",
+			"includes/carbon.class.php",
+			"includes/user.class.php",
+			"includes/show.class.php",
+			"includes/cache.class.php",
+			"includes/seo.class.php",
+			"includes/misc.class.php",
+			"includes/movie.class.php",
+			"includes/settings.class.php",
+			"includes/page.class.php",
+			"includes/stream.class.php",
+			"includes/request.class.php",
+			"includes/plugins.class.php",
+			"includes/router.class.php",
+			"includes/dice.php",
+			"language/language_mapping.php"
+		],		
+		"psr-4": {
+			"Rain\\": "library/rain/"
+		},
+		"files": [
+			"library/phpfastcache/phpfastcache.php",
+			"library/swiftmailer/swift_required.php",
+			"language/language_mapping.php"
+		]
+	},
+	"config": {
+        "bin-dir": "bin"
+    }
+}
