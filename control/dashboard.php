@@ -6,18 +6,6 @@ if (!defined("IN_SCRIPT") || !isset($_SESSION['admin_user_id']) || !$_SESSION['a
 ?>
 <div class="row-fluid">
     <div class="span12">
-        <?php 
-            if ($update_version > $current_version){
-        ?>
-        
-        <div class="alert alert-error">
-            <a class="close" data-dismiss="alert">×</a>
-            Your script is out of date. Version <strong><?php print($update_version); ?></strong> is now available. <a href="index.php?menu=update">Click here</a> to upgrade now
-        </div>
-        
-        <?php 
-            }
-        ?>
         <div class="row-fluid">
         
             <h3 class="heading">Quick stats</h3>
