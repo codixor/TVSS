@@ -19,47 +19,44 @@ if (!file_exists("vars.php")){
     }
 }
 
-include("includes/user.class.php");
-include("includes/show.class.php");
-include("includes/cache.class.php");
-include("includes/seo.class.php");
-include("includes/misc.class.php");
-include("includes/movie.class.php");
-include("includes/settings.class.php");
-include("includes/page.class.php");
-include("includes/stream.class.php");
-include("includes/request.class.php");
-include("includes/plugins.class.php");
-include("language/language_mapping.php");
+$app['settings'] = $container->create('Settings');
+$app['user'] 	 = $container->create('User');
+$app['page'] 	 = $container->create('Page');
+$app['movie'] 	 = $container->create('Movie');
+$app['show'] 	 = $container->create('Show');
+$app['cache']	 = $container->create('Cache', [$basepath]);
+$app['misc'] 	 = $container->create('Misc');
+$app['request']  = $container->create('Request');
+$app['plugins']  = $container->create('Plugins');
+$app['seo']  	 = $container->create('SEO');
+$app['stream'] 	 = $container->create('Stream');
 
-$settings = new Settings();
+$modules = $app['settings']->getModules();
 
-$modules = $settings->getModules();
-
-$default_language = $settings->getSetting("default_language", true);
+$default_language = $app['settings']->getSetting("default_language", true);
 if (!$default_language || (is_array($default_language) && empty($default_language))){
     $default_language = "en";
 }
 
-if (isset($_SESSION['language']) && $_SESSION['language']){
-    $language = $_SESSION['language'];
+if (Session::has('language')){
+    $language = Session::get('language');
 } else if (isset($_COOKIE['language']) && $_COOKIE['language']) {
     $language = $_COOKIE['language'];
-    $_SESSION['language'] = $_COOKIE['language'];
+	Session::put('language', $_COOKIE['language']);
 } else {
     if (isset($_SERVER['GEOIP_COUNTRY_CODE'])){
         $country_code = $_SERVER['GEOIP_COUNTRY_CODE'];
         
         if ($country_code && isset($language_mapping) && isset($language_mapping[$country_code])){
             $language = $language_mapping[$country_code];
-            $_SESSION['language'] = $language_mapping[$country_code];
+			Session::put('language', $language_mapping[$country_code]);
         } else {
-            $_SESSION['language'] = $default_language;
+			Session::put('language', $default_language);
             $language = $default_language;
         }
 
     } else {
-        $_SESSION['language'] = $default_language;
+		Session::put('language', $default_language);
         $language = $default_language;
     }
 }
@@ -68,7 +65,7 @@ if (isset($_SESSION['language']) && $_SESSION['language']){
 if (isset($lang) && $lang!=$language){
     $lang = preg_replace("/[^a-z]/i","",$lang);
     if (file_exists($basepath."/language/".$lang."/general.php")){
-        $_SESSION['language'] = $lang;
+		Session::put('language', $lang);
         $language = $lang;
     }
 }
@@ -77,13 +74,13 @@ if (isset($lang) && $lang!=$language){
 if (isset($_POST['action']) && isset($_POST['lang'])){
     $_POST['lang'] = preg_replace("/[^a-z]/i","",$_POST['lang']);
     if (file_exists($basepath."/language/".$_POST['lang']."/general.php")){
-        $_SESSION['language'] = $_POST['lang'];
+		Session::put('language', $_POST['lang']);
         $language = $_POST['lang'];
         setcookie("language",$_POST['lang'],time()+60*60*24*30, "/");
         
-        if (isset($_SESSION['loggeduser_id']) && $_SESSION['loggeduser_id']){
-            $user = new User();            
-            $user->update($_SESSION['loggeduser_id'],array("language" => $_POST['lang']));
+        if (Session::has('loggeduser_id')){
+			
+            $app['user']->update(Session::get('loggeduser_id'), array("language" => $_POST['lang']));
         }
     }
 }
@@ -107,53 +104,51 @@ if (isset($menu) && $menu=='logout'){
     exit();
 }
 
-if (!isset($_SESSION['loggeduser_id']) && isset($_COOKIE['guid'])){
-    $user = new User();
-    $res = $user->cookieLogin($_COOKIE['guid']);
+if (!Session::has('loggeduser_id') && isset($_COOKIE['guid'])){
+
+    $res = $app['user']->cookieLogin($_COOKIE['guid']);
     if (!$res){
         setcookie("guid","",time()-60*60, "/");
     }
 }
  
 if (((isset($menu) && $menu=='login') || (isset($action) && $action=='login')) && isset($username) && isset($password)){
-    $user = new User();
-    $errors = $user->login($username,$password);
+
+    $errors = $app['user']->login($username,$password);
     if ((isset($returnpath) && $returnpath) || (isset($menu) && $menu=='login')){
         print("<script>window.location='$baseurl$returnpath';</script>");
         exit();
     } 
 }
 
-if (isset($action) && $action=='change_avatar' && isset($_SESSION['loggeduser_id'])){
+if (isset($action) && $action=='change_avatar' && Session::has('loggeduser_id')){
     
     if (isset($_FILES['avatar_file']['name']) && $_FILES['avatar_file']['name']){
         if (($_FILES["avatar_file"]["type"] == "image/gif") || ($_FILES["avatar_file"]["type"] == "image/jpeg") || ($_FILES["avatar_file"]["type"] == "image/pjpeg") || ($_FILES["avatar_file"]["type"] == "image/png")){
-            $filename = $_SESSION['loggeduser_id']."_".date("YmdHis").".jpg";
-            if (move_uploaded_file($_FILES["avatar_file"]["tmp_name"],"$basepath/thumbs/users/" . $filename)){
-                $user = new User();
-                $user->update($_SESSION['loggeduser_id'],array("avatar" => $filename));
-                $_SESSION['loggeduser_details']['avatar'] = $filename;
+            $filename = Session::get('loggeduser_id')."_".date("YmdHis").".jpg";            
+			if (move_uploaded_file($_FILES["avatar_file"]["tmp_name"],"$basepath/thumbs/users/" . $filename)){
                 
-                $stream = new Stream();
+				$app['user']->update(Session::get('loggeduser_id'), array("avatar" => $filename));
+				Session::push('loggeduser_details.avatar', $filename);
                 $data = array();
-                $data['user_id'] = $_SESSION['loggeduser_id'];
-                $data['user_data'] = $_SESSION['loggeduser_details'];
+                $data['user_id'] = Session::get('loggeduser_id');
+                $data['user_data'] = Session::get('loggeduser_id');
                 $data['target_id'] = 0;
                 $data['target_data'] = array();
                 $data['target_type'] = 0;
                 $data['event_date'] = date("Y-m-d H:i:s");
                 $data['event_type'] = 4;
                 $data['event_comment'] = '';
-                $stream->addActivity($data);
-                unset($stream);
+                $app['stream']->addActivity($data);
+                unset($app['stream']);
             }    
         }
     }
     
 }
 
-if (isset($action) && $action=='settings' && isset($_SESSION['loggeduser_id'])){
-    $user = new User();
+if (isset($action) && $action=='settings' && Session::has('loggeduser_id')){
+
     if (isset($_POST['notify_favorite']) && isset($_POST['notify_favorite'])){
         $notify_favorite = 1;
     } else {
@@ -166,36 +161,22 @@ if (isset($action) && $action=='settings' && isset($_SESSION['loggeduser_id'])){
         $notify_new = 0;
     }
     
-    $user->update($_SESSION['loggeduser_id'],array("notify_favorite" => $notify_favorite,"notify_new" => $notify_new));
+    $app['user']->update(Session::get('loggeduser_id'), array("notify_favorite" => $notify_favorite,"notify_new" => $notify_new));
     
 }
-
-if (!isset($user)){
-    $user = new User();
-}
- 
-include("$basepath/templates/smarty/libs/Smarty.class.php");
 
 if (isset($theme) && $theme){
-    $_SESSION['theme']=$theme;
+	Session::put('theme', $theme);
 }
 
-$page = new Page();
-$movie = new Movie();
-$show = new Show();
-$cache = new Cache($basepath);
-$misc = new Misc();
-$request = new Request();
-$plugins = new Plugins();
-
 $hascache = 0;
-$cache_writeable = $cache->checkDir();
+$cache_writeable = $app['cache']->checkDir();
 
 if ($cache_writeable){
-    $cachekey_plain = date("YmdH").@$_SERVER['HTTP_HOST'].@$_SERVER['REQUEST_URI'].@json_encode($_GET).@json_encode($_POST).@json_encode($_SESSION).@json_encode($_COOKIE)."_".$language;
+    $cachekey_plain = date("YmdH").@$_SERVER['HTTP_HOST'].@$_SERVER['REQUEST_URI'].@json_encode($_GET).@json_encode($_POST);
     
     $cachekey = md5($cachekey_plain);
-    $hascache = $cache->getCache($cachekey);
+    $hascache = $app['cache']->getCache($cachekey);
 }
 
 $hascache = 0;
@@ -205,45 +186,47 @@ if ($hascache){
 } else {
     @ob_start();
 
-    if (!isset($_SESSION['theme']) || !$_SESSION['theme']){
-        $theme = $settings->getSetting("theme");
+    if (!Session::has('theme')){
+        $theme = $app['settings']->getSetting("theme");
         if (!count($theme)){
             $theme = 'svarog';
         } else {
             $theme = $theme->theme;
         }
     } else {
-        $theme = $_SESSION['theme'];
+        $theme = Session::get('theme');
     }
     
     
 
-    $smarty = new Smarty();
-    $smarty->caching = 0;
-    //$smarty->clear_all_cache();
-    $smarty->template_dir = "$basepath/templates/$theme";
+   Rain\Tpl::configure([
+		'base_url' 			=> $baseurl.'/',
+		'tpl_dir' 			=> $basepath.'/templates/'.$theme.'/',
+		'cache_dir' 		=> $basepath.'/cachefiles/'.$theme.'/',
+		'cache_path' 		=> 'cachefiles/'.$theme.'/',
+		'remove_comments' 	=> false,
+		'debug' 			=> false,
+		'path_replace' 		=> false,
+		'auto_escape' 		=> false
+	]);
+	
+	$app['tpl_compress'] = $container->create('Rain\\Tpl\\Plugin\\Compress');	
+
+	Rain\Tpl::registerPlugin($app['tpl_compress']);
+	$app['tpl'] = $container->create('Rain\\Tpl');
     
-    if (file_exists("$basepath/cachefiles/$theme")){
-    	$smarty->compile_dir = "$basepath/cachefiles/$theme";
-    	$smarty->cache_dir = "$basepath/cachefiles/$theme";
-    } else {
-    	$smarty->compile_dir = "$basepath/cachefiles/";
-    	$smarty->cache_dir = "$basepath/cachefiles";
-    }
-    $smarty->config_dir = "$basepath/templates/smarty/configs";
+	$app['global']['templatepath']   = $baseurl.'/templates/'.$theme;
+	$app['global']['cachekey_plain'] = $cachekey_plain;
     
-    $smarty->assign("templatepath","$baseurl/templates/$theme");
-    $smarty->assign("cachekey_plain",$cachekey_plain);
-    
-    if (isset($_SESSION['fb_justregistered']) && $_SESSION['fb_justregistered']){
-        $smarty->assign("facebook_promo",1);
-        unset($_SESSION['fb_justregistered']);
+    if (Session::has('fb_justregistered')){
+		$app['global']['facebook_promo'] = 1;
+		Session::forget('fb_justregistered');
     }
 
     
-    $pages = $page->getPagesMenu($language);
+    $pages = $app['page']->getPagesMenu($language);
     
-    $global_settings = $settings->getMultiSettings(array("tv_guide","captchas","listing_style","adfly","analytics","seo_links","facebook","smart_bar","smartbar_size","smartbar_rows","maxtvperpage","maxmoviesperpage","countdown_free","countdown_user"), true);
+    $global_settings = $app['settings']->getMultiSettings(array("tv_guide","captchas","listing_style","adfly","analytics","seo_links","facebook","smart_bar","smartbar_size","smartbar_rows","maxtvperpage","maxmoviesperpage","countdown_free","countdown_user"), true);
     
     /* SEO links */
     
@@ -282,7 +265,7 @@ if ($hascache){
         $listing_styles['links'] = true;        
     }
     
-    $smarty->assign("listing_styles", $listing_styles);
+	$app['global']['listing_styles'] = $listing_styles;
     
     /* SmartBar */
     
@@ -293,7 +276,7 @@ if ($hascache){
     
     /* Countdown before video */
     
-    if (!isset($_SESSION['loggeduser_id']) || !$_SESSION['loggeduser_id']){
+    if (!Session::has('loggeduser_id')){
         if ($global_settings['countdown_free']==''){
             $global_settings['countdown_free'] = 20;
         }
@@ -310,9 +293,9 @@ if ($hascache){
     
     /* Widgets */
     
-    $widgets = $settings->getWidgets();
+    $widgets = $app['settings']->getWidgets();
     
-    $shows = $show->getRandomShow(5,$language);
+    $shows = $app['show']->getRandomShow(5,$language);
     if (!count($shows)){
         $shows = '';
     } else {
@@ -324,7 +307,7 @@ if ($hascache){
     $shows = '';
     
     // smartbar
-    if ($user && isset($user->id)){
+    if ($app['user'] && isset($app['user']->id)){
         $smartbar_cachekey = "smartbar_".$user->id."_".date("YmdH")."_".$language; 
     } else {
         $smartbar_cachekey = "smartbar_global_".date("YmdH")."_".$language;
@@ -369,23 +352,23 @@ if ($hascache){
             break;
     }
     
-    $smartbar = $cache->getCache($smartbar_cachekey);
+    $smartbar = $app['cache']->getCache($smartbar_cachekey);
     if (!$smartbar){
-        $smartbar = $misc->getSmartbar($user,$movie,$show,$language,$smartbar_cols * $smartbar_rows);
+        $smartbar = $app['misc']->getSmartbar($app['user'],$app['movie'],$app['show'],$language,$smartbar_cols * $smartbar_rows);
         if ($cache_writeable){
-            $cache->saveCache($smartbar_cachekey,json_encode($smartbar));
+            $app['cache']->saveCache($smartbar_cachekey,json_encode($smartbar));
         }
     } else {
         $smartbar = json_decode($smartbar,true);
     }
     
-    $smarty->assign("smartbar_width", $smartbar_width);
-    $smarty->assign("smartbar_height", $smartbar_height);
-    $smarty->assign("smartbar_cols", $smartbar_cols);
+	$app['global']['smartbar_width']  = $smartbar_width;
+	$app['global']['smartbar_height'] = $smartbar_height;
+	$app['global']['smartbar_cols']   = $smartbar_cols;
     
     /* Featured shows */
     
-    $featured_shows = $show->getFeatured(4,$language);
+    $featured_shows = $app['show']->getFeatured(4,$language);
     if (!count($featured_shows)){
         $featured_shows = '';
     } else {
@@ -398,13 +381,13 @@ if ($hascache){
     }
     /* Categories */
     
-    $tv_categories = $show->getCategories($language);
+    $tv_categories = $app['show']->getCategories($language);
     
     if (!count($tv_categories)){
         $tv_categories = '';
     }
 
-    $movie_categories =  $movie->getCategories($language);
+    $movie_categories =  $app['movie']->getCategories($language);
     
     if (!count($movie_categories)){
         $movie_categories = '';
@@ -417,42 +400,40 @@ if ($hascache){
     }
     $menu = preg_replace("/[^a-zA-Z0-9\-_]/","",$menu);
     
-    $smarty->assign("smartbar",$smartbar);
-    $smarty->assign("baseurl",$baseurl);
-    $smarty->assign("sitename",$sitename);
-    $smarty->assign("siteslogan",$siteslogan);
-    $smarty->assign("menu",$menu);
-    $smarty->assign("pages",$pages);
-    $smarty->assign("global_settings",$global_settings);
-    $smarty->assign("widgets",$widgets);
-    $smarty->assign("shows",$shows);
-    $smarty->assign("tv_categories",$tv_categories);
-    $smarty->assign("movie_categories",$movie_categories);
-    $smarty->assign("current_url",@$_SERVER['REQUEST_URI']);
-    $smarty->assign("modules",$modules);
+	$app['global']['smartbar']  		= $smartbar;
+	$app['global']['baseurl']   		= $baseurl;
+	$app['global']['sitename']   		= $sitename;
+	$app['global']['siteslogan']   		= $siteslogan;
+	$app['global']['menu']   			= $menu;
+	$app['global']['pages']   		 	= $pages;
+	$app['global']['global_settings']   = $global_settings;
+	$app['global']['widgets']   		= $widgets;
+	$app['global']['shows']   			= $shows;
+	$app['global']['tv_categories']   	= $tv_categories;
+	$app['global']['movie_categories']  = $movie_categories;
+	$app['global']['current_url']   	= $_SERVER['REQUEST_URI'];
+	$app['global']['modules']   		= $modules;
     
 
-    if (!isset($_SESSION['loggeduser_id']) || !$_SESSION['loggeduser_id']){
-        $smarty->assign("loggeduser_id",0);
+    if (!Session::has('loggeduser_id')){
+		$app['global']['loggeduser_id']   = 0;
         $logged = 0;
     } else {
         $logged = 1;
-        $smarty->assign("loggeduser_id",$_SESSION['loggeduser_id']);
-        $smarty->assign("loggeduser_username",$_SESSION['loggeduser_username']);
-        $smarty->assign("loggeduser_details",$_SESSION['loggeduser_details']);
+		$app['global']['loggeduser_id']   	  = Session::get('loggeduser_id');
+		$app['global']['loggeduser_username'] = Session::get('loggeduser_username');
     }
 
-    $seo = new SEO();
     $seodata = array();
     
     
-    $seodata['menu']=$menu;
+    $seodata['menu'] = $menu;
     
     if (file_exists("language/$language/$menu.php")){
         require_once("language/$language/$menu.php");
     }
     
-    $embed_languages = $misc->getEmbedLanguages();
+    $embed_languages = $app['misc']->getEmbedLanguages();
     $available_languages = array();
     foreach($embed_languages as $lang_code => $lang_data){
         if (substr_count($lang_code,"SUB")==0){
@@ -460,26 +441,26 @@ if ($hascache){
         }
     }
     
-    $activeplugins = $plugins->getInstalledPlugins();
-    $plugin_menus = $plugins->getFrontendMenu($activeplugins);
+    $activeplugins = $app['plugins']->getInstalledPlugins();
+    $plugin_menus = $app['plugins']->getFrontendMenu($activeplugins);
     if ($menu == "plugin"){
         if (isset($plugin) && $plugin && isset($plugin_menu) && $plugin_menu){
             $plugin = preg_replace("/[^a-zA-Z0-9\-_]/","",$plugin);
             $plugin_menu = preg_replace("/[^a-zA-Z0-9\-_]/","",$plugin_menu);
             
             if (file_exists($basepath."/plugins/".$plugin."/".$plugin_menu.".php")){
-                $smarty->assign("plugin",$plugin);
-                $smarty->assign("plugin_menu",$plugin_menu);
+				$app['global']['plugin'] 	  = $plugin;
+				$app['global']['plugin_menu'] = $plugin_menu;
                 include($basepath."/plugins/".$plugin."/".$plugin_menu.".php");
             } else {
                 unset($plugin);
                 unset($plugin_menu);
-                $smarty->assign("menu","home");
+				$app['global']['menu'] = 'home';               
                 $menu = "home";
                 include("home.php");                
             }
         } else {
-            $smarty->assign("menu","home");
+            $app['global']['menu'] = 'home';
             $menu = "home";
             include("home.php");
         }
@@ -487,23 +468,24 @@ if ($hascache){
         include("$menu.php");    
     }
     
-    $seo_tags = $seo->getSeo($seodata);
-    $smarty->assign("seo",$seo_tags);
-    $smarty->assign("lang",$lang);
-    $smarty->assign("routes",$routes);
-    $smarty->assign("available_languages",$available_languages);
-    $smarty->assign("embed_languages",$embed_languages);
-    $smarty->assign("plugin_menus",$plugin_menus);
-    $smarty->assign("absolute_url","http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+    $seo_tags = $app['seo']->getSeo($seodata);
+	$app['global']['seo'] 				  = $seo_tags;
+	$app['global']['lang'] 				  = $lang;
+	$app['global']['routes'] 			  = $routes;
+	$app['global']['available_languages'] = $available_languages;
+	$app['global']['embed_languages'] 	  = $embed_languages;
+	$app['global']['plugin_menus'] 		  = $plugin_menus;
+	$app['global']['absolute_url'] 		  = "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
     
+	$app['tpl']->assign($app['global']);
     if ($menu == "plugin"){
         if (isset($plugin) && $plugin && isset($plugin_menu) && $plugin_menu){
-            $smarty->display($basepath."/plugins/".$plugin."/templates/".$plugin_menu.".tpl");
+            $app['tpl']->draw($basepath."/plugins/".$plugin."/templates/".$plugin_menu.".tpl");
         } else {
-            $smarty->display("home.tpl");
+            $app['tpl']->draw('home');
         }
     } else {
-        $smarty->display($menu.".tpl");
+        $app['tpl']->draw($menu);
     }
     
     $pagecontent = ob_get_contents();
@@ -512,7 +494,7 @@ if ($hascache){
     print($pagecontent);
     
     if ($cache_writeable){
-        $cache->saveCache($cachekey,$pagecontent);
+        $app['cache']->saveCache($cachekey,$pagecontent);
     }
     
 }

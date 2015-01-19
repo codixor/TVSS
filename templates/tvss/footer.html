@@ -1,0 +1,41 @@
+	<footer>
+        <p>&copy; Company 2014</p>
+      </footer>
+    </div>
+
+	<div id="top">
+		<a title="Back to the top">
+			<i class="glyphicon glyphicon-chevron-up"></i>
+		</a>
+	</div>
+<script>
+	Modernizr.load([
+	{
+		load: '//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js',
+		complete: function () {
+			if ( !window.jQuery ) {						
+				Modernizr.load("{$baseurl}assets/js/vendor/jquery-1.11.1.min.js");
+			}
+		}
+	},
+	{
+		load: "{$baseurl}/assets/js/vendor/bootstrap.min.js"
+	},
+	{
+		load: "{$baseurl}/assets/js/plugins.js"
+	},
+	{
+		load: "{$baseurl}/assets/js/main.js"
+	},				
+	{
+		load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/analytics.js'
+	}
+	]);	
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-XXXXX-X', 'auto');
+	ga('send', 'pageview');
+	ga('set', '&uid', '11212121');
+</script>
+	
+    </body>
+</html>

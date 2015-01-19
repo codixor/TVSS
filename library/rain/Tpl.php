@@ -54,18 +54,17 @@ class Tpl {
      *
      * @return void, string: depending of the $toString
      */
-    public function draw($templateFilePath, $toString = FALSE ) {
+    public function draw($templateFilePath, $httpCode = FALSE, $toString = FALSE ) {
         extract($this->var);
         // Merge local and static configurations
-        $this->config  = $this->objectConf + static::$conf;
+        $this->config = $this->objectConf + static::$conf;
 		
 		$compiled_file = $this->checkTemplate($templateFilePath);
+		$date 		   = new \DateTime();
+		$last_modif    = $date->setTimestamp(filemtime($compiled_file));
 		
-        if (substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')) 
-			ob_start("ob_gzhandler");
-		else 
-			ob_start("sanitize_output");
-		
+        if (substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')) ob_start("ob_gzhandler");
+		else ob_start("sanitize_output");
         require $compiled_file;
         $html = ob_get_clean();
 
@@ -77,18 +76,40 @@ class Tpl {
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 		
-		if ($toString){
+		 if ($toString)
+		{
             return $html;
-		}/*elseif(substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') || substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'x-gzip')){
+		}
+		
+		$status_code = 200;		
+		if($httpCode)
+			$status_code = $httpCode;
+        /*if (substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') || substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'x-gzip'))
+		{
 			$html = gzcompress($html, 9); 
 			$html = substr($html, 0, strlen($html));
-			header('Content-Encoding: gzip');
-			echo("\x1f\x8b\x08\x00\x00\x00\x00\x00".$html);
+			$etag = md5( $html );
+			$response = new \Symfony\Component\HttpFoundation\Response();
+			$response->setStatusCode($status_code);
+			$response->setContent("\x1f\x8b\x08\x00\x00\x00\x00\x00".$html);
+			$response->headers->set('Content-Type', 'text/html');
+			$response->headers->set('Content-Encoding', 'gzip');
+			$response->setCharset('UTF-8');
+			$response->setCache([
+				'etag'          => $etag,
+				'last_modified' => $last_modif,
+				'max_age'       => 600,
+				's_maxage'      => 600,
+				'public'        => true,
+				// 'private'    => true,
+			]);
+			$response->send();
+			exit;
 		}*/
-        else{
-            echo $html;
+		else{
+			echo $html;
+			exit;
 		}
-		exit();
     }
 
     /**
@@ -118,7 +139,6 @@ class Tpl {
             return $html;
         else
             echo $html;
-		exit();
     }
 
     /**

@@ -1,12 +1,17 @@
 {
 	"require": {
-		"php": ">=5.4.0"
+		"php": ">=5.4.0",
+		"gears/session": "*",
+		"gears/asset": "*",
+		"gears/string": "*",
+		"gears/arrays": "*"		
 	},
 	"require-dev": {
 		
 	},	
 	"autoload": {
 		"classmap": [
+			"includes/dice.php",
 			"includes/idiorm.class.php",
 			"includes/carbon.class.php",
 			"includes/user.class.php",
@@ -19,17 +24,13 @@
 			"includes/page.class.php",
 			"includes/stream.class.php",
 			"includes/request.class.php",
-			"includes/plugins.class.php",
-			"includes/router.class.php",
-			"includes/dice.php",
-			"language/language_mapping.php"
+			"includes/plugins.class.php"
 		],		
 		"psr-4": {
 			"Rain\\": "library/rain/"
 		},
 		"files": [
 			"library/phpfastcache/phpfastcache.php",
-			"library/swiftmailer/swift_required.php",
 			"language/language_mapping.php"
 		]
 	},
