@@ -48,7 +48,6 @@ require_once("../includes/page.class.php");
 require_once("../includes/settings.class.php");
 require_once("../includes/phpmailer/class.phpmailer.php");
 require_once("../includes/facebook/facebook.php");
-require_once("../includes/updater.class.php");
 
 
 $misc = new Misc();
@@ -60,7 +59,6 @@ $request = new Request();
 $plugins = new Plugins();
 $settings = new Settings();
 $page = new Page();
-$updater = new Updater();
 $curl = new Curl();
 
 $global_languages = $misc->getLanguages();
@@ -93,16 +91,6 @@ if (isset($logout)){
 $current_version = $settings->getSetting("version", false);
 if (empty($current_version)){
     $current_version = "2.1";   
-}
-
-if (!isset($_SESSION['update_version'])){
-    $update_version = $updater->getLatestVersion($curl);
-    if (!$update_version){
-        $update_version = $current_version;
-    }
-    $_SESSION['update_version'] = $update_version;
-} else {
-    $update_version = $_SESSION['update_version'];
 }
 
 if (isset($dologin)){ 
@@ -250,12 +238,6 @@ $admin_menu['plugins']         = array(     "menu" => false, "url" => false, "ti
                                          "submenus" => array(    "plugins" => array("title" => "Manage plugins", "url" => "index.php?menu=plugins", "type" => "normal"))
                                     );
                                     
-$admin_menu['submitters']     = array(     "menu" => false, "url" => false, "title" => "TV submitters", "icon" => "icon-bullhorn",
-                                        "submenus" => array(    "submitter_sidereel" => array("title" => "Sidereel", "url" => "index.php?menu=submitter_sidereel", "type" => "normal"),
-                                                                "submitter_tvlinks" => array("title" => "TV-links.eu", "url" => "index.php?menu=submitter_tvlinks", "type" => "normal")
-                                                            )
-                                    );
-                                    
 $admin_menu['configuration']= array(     "menu" => false, "url" => false, "title" => "Configuration", "icon" => "icon-cog",
                                          "submenus" => array(    "settings_general" => array("title" => "General settings", "url" => "index.php?menu=settings_general", "type" => "normal"),
                                                                 "settings_seo" => array("title" => "SEO settings", "url" => "index.php?menu=settings_seo", "type" => "normal"),
@@ -266,9 +248,7 @@ $admin_menu['configuration']= array(     "menu" => false, "url" => false, "title
                                     
 $admin_menu['pages']         = array(     "menu" => false, "url" => false, "title" => "Pages", "icon" => "icon-edit",
                                          "submenus" => array(    "pages_manage" => array("title" => "Manage pages", "url" => "index.php?menu=pages_manage", "type" => "normal"))
-                                    );
-$admin_menu['update']    = array(     "menu" => "update", "url" => "index.php?menu=update", "title" => "Update", "icon" => "icon-arrow-up",
-                                        "submenus" => array());                                        
+                                    );                              
 
 $plugin_menus = $plugins->getBackendMenu();
 $activeplugins = $plugins->getInstalledPlugins();
