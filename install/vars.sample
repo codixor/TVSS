@@ -23,3 +23,20 @@ ORM::configure([
 ]);
 
 ORM::configure('caching', true);
+
+// Create a new gears session.
+$session = new Gears\Session();
+$session->dbConfig = 
+[
+    'driver'    => 'mysql',
+    'host'      => $dbhost,
+    'database'  => $dbname,
+    'username'  => $dbuser,
+    'password'  => $dbpass,
+    'charset'   => 'utf8',
+    'collation' => 'utf8_general_ci',
+    'prefix'    => '',
+];
+$session->name = 'tvss_sess';
+$session->install();
+$session->globalise();
