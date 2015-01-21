@@ -2,7 +2,7 @@ include("includes/idiorm.php");
 include("includes/Carbon.php");
 
 class_alias('Carbon\Carbon', 'Carbon');
-
+$container   = new \Dice\Dice;
 $license_key = "[[LICENSE_KEY]]";
 
 $dbhost = "[[DBHOST]]";
@@ -23,4 +23,3 @@ ORM::configure([
 ]);
 
 ORM::configure('caching', true);
-$container 	   = new \Dice\Dice;
