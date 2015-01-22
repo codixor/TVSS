@@ -1,0 +1,61 @@
+/*
+----------------------------------------------------------
+----------------------------------------------------------
+
+Top link
+
+----------------------------------------------------------
+----------------------------------------------------------
+*/
+#top {
+    position: fixed;
+    bottom: 35px;
+    right: 50px;
+    z-index: 99999;
+    display: none;
+	cursor: pointer;
+}
+
+#top a i {
+   background: #008CBA;
+	color: #FFF;
+	border-radius: 2px;
+	font-size: 2.6rem;
+	padding: 0.2rem;
+	-webkit-transition: 250ms linear all;
+	-moz-transition: 250ms linear all;
+	transition: 250ms linear all;
+	text-decoration: none;
+	height: 3rem;
+}
+
+#top a:hover i {
+    background: #333333;
+}
+
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
+}
+
+
+
+
+
+
+
+
+
+
+
+
