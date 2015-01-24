@@ -1,3 +1,5 @@
+$ApplicationRoot = (__DIR__);
+require($ApplicationRoot . '/vendor/autoload.php');
 include("includes/idiorm.php");
 include("includes/Carbon.php");
 
